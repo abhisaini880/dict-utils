@@ -3,16 +3,14 @@ from setuptools import setup, find_packages
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = "1.0.1"
+VERSION = "1.1.2"
 PACKAGE_NAME = "nestdict"
 AUTHOR = "Abhishek Saini"
 AUTHOR_EMAIL = "abhisaini880@email.com"
 URL = "https://github.com/abhisaini880/nestdict"
 
-LICENSE = "Apache License 2.0"
-DESCRIPTION = (
-    "Utility/Helper functions build around dictionary data type in Python"
-)
+LICENSE = "MIT License"
+DESCRIPTION = "A Python library offering enhanced functionality for working with nested dictionaries, building on top of Python's standard dict."
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
