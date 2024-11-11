@@ -138,7 +138,7 @@ class BaseNestDict:
 
         data[keys[-1]] = value
 
-    def delete(self, key_path):
+    def __delitem__(self, key_path):
 
         value_on_key_path = self._flatten_dict.get(key_path)
         if isinstance(value_on_key_path, dict):
@@ -156,7 +156,15 @@ class BaseNestDict:
         keys = key_path.split(".")
         data = self._flatten_dict
         for index in range(len(keys[:-1])):
-            data = data[keys[index]]
+            if (
+                index != 0
+                and keys[index].startswith("[")
+                and keys[index].endswith("]")
+            ):
+                index = int(keys[index][1:-1])
+                data = data[index]
+            else:
+                data = data[keys[index]]
 
         del data[keys[-1]]
 

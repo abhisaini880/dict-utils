@@ -1,6 +1,6 @@
 """ Implementation for the Field class. """
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 import re
 
 
@@ -50,8 +50,8 @@ class Field:
     ):
         self.field_type = field_type
         self.required = required
-        self.default = default
-        self.immutable = immutable
+        self.default = default  # not implemented yet
+        self.immutable = immutable  # not implemented yet
         self.min = min
         self.max = max
         self.min_length = min_length
@@ -61,12 +61,9 @@ class Field:
 
         self._validate_field()
 
-    def _validate_field(self) -> Any:
+    def _validate_field(self) -> None:
         """
-        _summary_
-
-        Returns:
-            Any: _description_
+        Validate all the args of Field class
         """
 
         self._validate_field_type()

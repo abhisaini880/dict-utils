@@ -1,6 +1,8 @@
-# NestDict: Advanced Nested Dictionary Library for Python
+# NestDict: Advanced data structures for complex data
 
-![PyPI](https://img.shields.io/pypi/v/nestdict) ![Python Versions](https://img.shields.io/badge/python-3.6%2B-blue)
+![PyPI](https://img.shields.io/pypi/v/nestdict) ![Python Versions](https://img.shields.io/badge/python-3.6%2B-yellow) ![PyPI Downloads](https://img.shields.io/pypi/dm/nestdict) ![License](https://img.shields.io/pypi/l/nestdict
+)
+
 
 ## Table of Contents
 
@@ -19,9 +21,10 @@
 ## Features
 
 - **Nested Dictionary Handling**: Seamlessly access and manipulate deeply nested dictionaries.
-- **Validation**: Validate data types based on predefined mappings.
-- **Frozen Dictionaries**: Create immutable nested dictionaries to protect critical data.
-- **List Support**: Manage lists within nested structures effectively.
+- **Validation**: Validate data types based on predefined mappings, including support for complex data structures.
+- **Advanced Validation**: Supports additional validation rules such as value ranges, required fields, and uniqueness constraints.
+- **Dynamic Type Checking**: Automatically validate data types whenever a value is updated.
+
 
 ## Installation
 
@@ -34,28 +37,63 @@ pip install nestdict
 ## Usage
 Here’s a quick example of how to use NestDict:
 ``` python
-from nestdict import NestDict
+from nestdict import NestDict, Field, Schema
 
 # Create a nested dictionary
-data = {
-    "user": {
+data = [
+    {
+        "id": 1001,
         "name": "John Doe",
         "age": 30,
-        "address": {
-            "city": "New York",
-            "zip": "10001"
-        }
-    }
-}
+        "address": {"city": "New York", "zip": "10001"},
+    },
+    {
+        "id": 1002,
+        "name": "Mira",
+        "age": 25,
+        "address": {"city": "Chicago", "zip": "40002"},
+    },
+]
+
+# Define schema
+user_schema = Schema(
+    type=list,
+    items={
+        "id": Field(int, required=True),
+        "name": Field(str, required=True),
+        "age": Field(int, required=True, min=0, max=120),
+        "address": Schema(
+            type=dict,
+            items={
+                "city": Field(str, required=True),
+                "zip": Field(str, required=True)
+            }
+        )
+    },
+    min_length=1,
+    max_length=1000,
+    unique_fields=["id"],
+)
 
 # Initialize NestDict
-nested_dict = NestDict(data)
+nested_dict = NestDict(data=data, schema=user_schema)
 
 # Access nested data
-print(nested_dict.get("user.name"))  # Output: John Doe
+print(nested_dict.get("[0].name"))  # Output: "John Doe"
+print(nested_dict.get("[].name"))  # Output: ["John Doe", "Mira"]
 
 # Set new values
-nested_dict["user.age"] =  31
+nested_dict["[0].age"] =  31
+
+# This will raise a ValueError because the age must be an integer
+try:
+    nested_dict["[0].age"] = "thirty-five"
+except ValueError as e:
+    print(e)  # Output: user.age must be of type <class 'int'>
+
+# Delete nested data
+del nested_dict["[0].address.city"]
+print(nested_dict.get("[0].address.city"))  # Output: None
 
 # print out dict
 print(nested_dict)
@@ -63,15 +101,10 @@ print(nested_dict)
 # save final dict object
 final_dict = nested_dict.to_dict()
 
-# Validate data
-validation_rules = {
-    "user.age": int,
-    "user.name": str
-}
-nested_dict_with_validation = NestDict(data, validation=validation_rules)
-
 ```
 ## API Reference
+
+### NestDict
 
 - `get(key_path, default=None)`
 Retrieves the value at the specified key path in the nested dictionary. If the key path does not exist, it returns the specified default value (or `None` if not provided).
@@ -82,12 +115,25 @@ Allows access to the value at the specified key path using bracket notation (e.g
 - `__setitem__(key_path, value)`
 Sets the value at the specified key path using bracket notation (e.g., `nested_dict[key_path] = value`). It validates the value's type according to the validation rules if provided during initialization.
 
-- `delete(key_path)`
+- `__delitem__(key_path)`
 Deletes the value at the specified key path. If the key path does not exist, it raises a `KeyError`.
 
 - `to_dict()`
 Returns the nested structure as a standard dictionary, representing the current state of the data.
 
+### Schema
+
+- `Schema(type, items, unique_fields=[], min_length=None, max_length=None)`
+Define a schema for nested data structures.
+- `validate(data)`
+Validate data against the schema.
+
+### Field
+
+- `Field(field_type, required=False, default=None, immutable=False, min=None, max=None, min_length=None, max_length=None, pattern=None, choices=None, dependencies=None, name="Field")`
+Define a field with validation rules.
+- `validate_value(value)`
+Validate a value against the field constraints.
 
 ### Data Parameter
 
@@ -98,17 +144,6 @@ The **data** parameter is the initial nested dictionary structure that you want 
 - **Nested Structure**: You can create deeply nested dictionaries. For example, `{"a": {"b": {"c": 1}}}` is a valid input.
 - **Mutable**: The data is mutable, meaning you can modify it using the available methods like `set`, `delete`, or through direct item access.
 
-
-### Validation Parameter
-
-The **validation** parameter is an optional dictionary used to enforce type checking on the values in your nested dictionary. It allows you to define expected data types for specific keys.
-
-#### Key Points:
-- **Type**: Accepts a `dict` where:
-  - **Keys**: Are the key paths (in dot notation) that you want to validate. For example, `"user.age"` for a nested dictionary structure.
-  - **Values**: Are the expected data types (e.g., `int`, `str`, `list`, `dict`) for those keys.
-- **Validation Check**: When you set a value for a key specified in the validation dictionary, the library checks if the value is of the expected type. If it’s not, a `ValueError` is raised.
-- **Initialization Validation**: The validation is performed both during the initialization of the `NestDict` instance and when using the `set` method.
 
 ## Contributing Guidelines
 
